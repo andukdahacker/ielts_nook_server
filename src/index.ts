@@ -6,6 +6,10 @@ import swaggerUi from "@fastify/swagger-ui";
 import Fastify, { FastifyInstance } from "fastify";
 import { IncomingMessage, Server, ServerResponse } from "http";
 import Env from "./env";
+import firebasePlugin from "./plugins/firebase.plugin";
+import prismaPlugin from "./plugins/prisma.plugin";
+import routes from "./routes/routes";
+import JwtService from "./services/jwt.service";
 
 const build = async () => {
   console.log("Starting server...", process.env.NODE_ENV);
@@ -20,12 +24,31 @@ const build = async () => {
     dotenv: true,
     schema: {
       type: "object",
+      required: [
+        "NODE_ENV",
+        "PORT",
+        "FIREBASE_PROJECT_ID",
+        "FIREBASE_CLIENT_EMAIL",
+        "FIREBASE_PRIVATE_KEY",
+      ],
       properties: {
         NODE_ENV: {
           type: "string",
         },
         PORT: {
           type: "number",
+        },
+        JWT_SECRET: {
+          type: "string",
+        },
+        FIREBASE_PROJECT_ID: {
+          type: "string",
+        },
+        FIREBASE_CLIENT_EMAIL: {
+          type: "string",
+        },
+        FIREBASE_PRIVATE_KEY: {
+          type: "string",
         },
       },
     },
@@ -41,8 +64,8 @@ const build = async () => {
     openapi: {
       openapi: "3.0.0",
       info: {
-        title: "StudyBean API",
-        description: "StudyBean API",
+        title: "IELTS Nook API",
+        description: "IELTS Nook API",
         version: "1.0.0",
       },
       servers: [
@@ -83,6 +106,35 @@ const build = async () => {
       return swaggerObject;
     },
     transformSpecificationClone: true,
+  });
+
+  const env = app.getEnvs<Env>();
+
+  app.register(prismaPlugin);
+
+  app.register(firebasePlugin, {
+    credential: {
+      projectId: env.FIREBASE_PROJECT_ID,
+      clientEmail: env.FIREBASE_CLIENT_EMAIL,
+      privateKey: env.FIREBASE_PRIVATE_KEY
+        ? env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n")
+        : undefined,
+    },
+  });
+
+  app.register(routes, { prefix: "/api" });
+
+  app.addHook("onRequest", async (request, _reply) => {
+    request.jwtService = new JwtService(env.JWT_SECRET);
+  });
+
+  app.setErrorHandler((error, request, reply) => {
+    request.log.error(error);
+    reply.log.error(error);
+    return reply.status(500).send({
+      error,
+      message: "Internal server error",
+    });
   });
 
   return app;
