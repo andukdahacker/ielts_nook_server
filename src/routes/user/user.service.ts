@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { CreateUserInput } from "./dto/create_user.input";
 import { GetUserListInput } from "./dto/get_user_list.input";
+import { UpdateUserInput } from "./dto/update_user.input";
 
 class UserService {
   constructor(private readonly prisma: PrismaClient) {}
@@ -38,6 +39,19 @@ class UserService {
             id: centerId,
           },
         },
+      },
+    });
+
+    return user;
+  }
+
+  async updateUser(input: UpdateUserInput) {
+    const user = await this.prisma.user.update({
+      where: {
+        id: input.userId,
+      },
+      data: {
+        ...input,
       },
     });
 

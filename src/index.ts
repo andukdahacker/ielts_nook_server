@@ -61,6 +61,19 @@ const build = async () => {
   app.register(helmet);
 
   app.register(swagger, {
+    refResolver: {
+      buildLocalReference: (json, baseUri, fragment, i) => {
+        if (!json.title && json.$id) {
+          json.title = json.$id;
+        }
+        // Fallback if no $id is present
+        if (!json.$id) {
+          return `def-${i}`;
+        }
+
+        return `${json.$id}`;
+      },
+    },
     openapi: {
       openapi: "3.0.0",
       info: {

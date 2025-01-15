@@ -4,10 +4,23 @@ import { CreateUserInput } from "./dto/create_user.input";
 import { CreateUserResponse } from "./dto/create_user.response";
 import { GetUserListInput } from "./dto/get_user_list.input";
 import { GetUserListResponse } from "./dto/get_user_list.response";
+import { UpdateUserInput } from "./dto/update_user.input";
+import { UpdateUserResponse } from "./dto/update_user.response";
 import UserService from "./user.service";
 
 class UserController {
   constructor(private readonly userService: UserService) {}
+
+  async updateUser(input: UpdateUserInput): Promise<UpdateUserResponse> {
+    const user = await this.userService.updateUser(input);
+
+    return {
+      data: {
+        user
+      },
+      message: "Updated user successfully"
+    }
+  }
 
   private async getCenterId(jwtPayload: AppJwtPayload) {
     let centerId = null;
