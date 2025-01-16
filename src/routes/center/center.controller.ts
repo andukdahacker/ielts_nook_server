@@ -31,7 +31,7 @@ class CenterController {
   }
 
   async register(input: RegisterCenterInput): Promise<RegisterCenterResponse> {
-    const { email } = input;
+    const { email, name } = input;
 
     const existedAccount = await this.centerService.findCenterByEmail(email);
 
@@ -39,7 +39,7 @@ class CenterController {
       throw new Error("An account has already used this email address");
     }
 
-    const center = await this.centerService.createCenter(email);
+    const center = await this.centerService.createCenter(email, name);
 
     return {
       data: {

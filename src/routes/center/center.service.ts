@@ -6,9 +6,9 @@ class CenterService {
   async findCenterById(id: string) {
     const center = await this.prisma.center.findUnique({
       where: {
-        id
-      }
-    })
+        id,
+      },
+    });
 
     return center;
   }
@@ -23,10 +23,11 @@ class CenterService {
     return center;
   }
 
-  async createCenter(email: string) {
+  async createCenter(email: string, name: string) {
     const center = await this.prisma.center.create({
       data: {
         email,
+        name,
       },
     });
 
