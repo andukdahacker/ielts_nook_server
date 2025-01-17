@@ -6,6 +6,14 @@ import { UpdateUserInput } from "./dto/update_user.input";
 class UserService {
   constructor(private readonly prisma: PrismaClient) {}
 
+  async findUserByEmail(email: string) {
+    return await this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+  }
+
   async findUserById(id: string) {
     return await this.prisma.user.findUnique({
       where: {

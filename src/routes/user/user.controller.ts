@@ -1,25 +1,31 @@
 import argon2 from "argon2";
 import { AppJwtPayload } from "../../middlewares/auth.middleware";
+import JwtService from "../../services/jwt.service";
 import { CreateUserInput } from "./dto/create_user.input";
 import { CreateUserResponse } from "./dto/create_user.response";
 import { GetUserListInput } from "./dto/get_user_list.input";
 import { GetUserListResponse } from "./dto/get_user_list.response";
+import { SignInUserInput } from "./dto/sign_in_user.input";
+import { SignInUserResponse } from "./dto/sign_in_user.response";
 import { UpdateUserInput } from "./dto/update_user.input";
 import { UpdateUserResponse } from "./dto/update_user.response";
 import UserService from "./user.service";
 
 class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   async updateUser(input: UpdateUserInput): Promise<UpdateUserResponse> {
     const user = await this.userService.updateUser(input);
 
     return {
       data: {
-        user
+        user,
       },
-      message: "Updated user successfully"
-    }
+      message: "Updated user successfully",
+    };
   }
 
   private async getCenterId(jwtPayload: AppJwtPayload) {
@@ -107,6 +113,37 @@ class UserController {
         pageInfo: { hasNextPage: true, cursor },
       },
       message: "Get user list successfully",
+    };
+  }
+
+  async signIn(input: SignInUserInput): Promise<SignInUserResponse> {
+    const { email, password } = input;
+
+    const user = await this.userService.findUserByEmail(email);
+
+    if (!user) {
+      throw new Error("Cannot find user");
+    }
+
+    const isValidPassword = await argon2.verify(user.password, password);
+
+    if (!isValidPassword) {
+      throw new Error("Wrong password");
+    }
+
+    const token = await this.jwtService.sign<AppJwtPayload>({
+      email: email,
+      id: user.id,
+      isCenter: false,
+      role: user.role,
+    });
+
+    return {
+      data: {
+        token,
+        user,
+      },
+      message: "Sign in user successfully",
     };
   }
 }
