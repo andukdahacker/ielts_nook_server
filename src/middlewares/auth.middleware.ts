@@ -47,6 +47,7 @@ async function authMiddleware(request: FastifyRequest, reply: FastifyReply) {
 
     request.jwtPayload = decoded;
   } catch (error) {
+    reply.log.error(error);
     return reply.status(401).send({
       error: error,
       message: "Unauthorized",

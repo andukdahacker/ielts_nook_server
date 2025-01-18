@@ -72,6 +72,19 @@ class UserService {
     const userList = await this.prisma.user.findMany({
       where: {
         centerId,
+        OR: input.searchString
+          ? [
+              {
+                firstName: {
+                  contains: input.searchString,
+                  mode: "insensitive",
+                },
+              },
+              {
+                lastName: { contains: input.searchString, mode: "insensitive" },
+              },
+            ]
+          : undefined,
       },
       take,
       cursor: cursor ? { id: cursor } : undefined,

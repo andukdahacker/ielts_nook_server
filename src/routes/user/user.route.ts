@@ -26,10 +26,17 @@ import {
   UpdateUserInputSchema,
 } from "./dto/update_user.input";
 import { UpdateUserResponseSchema } from "./dto/update_user.response";
+import { UserRoleSchema, UserSchema } from "./schema/user.schema";
 import UserController from "./user.controller";
 import UserService from "./user.service";
 
 async function userRoutes(fastify: FastifyInstance, opts: any) {
+  fastify.addSchema(UserRoleSchema);
+  fastify.addSchema(UserSchema);
+  fastify.addSchema(CreateUserInputSchema);
+  fastify.addSchema(GetUserListInputSchema);
+  fastify.addSchema(SignInUserInputSchema);
+  fastify.addSchema(UpdateUserInputSchema);
   const env = fastify.getEnvs<Env>();
   const userService = new UserService(fastify.db);
   const jwtService = new JwtService(env.JWT_SECRET);

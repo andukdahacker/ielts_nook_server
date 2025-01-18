@@ -8,10 +8,12 @@ function roleMiddleware(roles: UserRole[]) {
 
     if (jwtPayload.isCenter) {
       done();
+      return;
     }
 
     if (roles.includes(jwtPayload.role)) {
       done();
+      return;
     }
 
     reply.status(400).send({

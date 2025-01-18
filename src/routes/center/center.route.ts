@@ -19,8 +19,12 @@ import {
   SignInCenterInputSchema,
 } from "./dto/sign_in_center.input";
 import { SignInCenterResponseSchema } from "./dto/sign_in_center.response";
+import { CenterSchema } from "./schema/center.schema";
 
 async function centerRoutes(fastify: FastifyInstance, opts: any) {
+  fastify.addSchema(CenterSchema);
+  fastify.addSchema(RegisterCenterInputSchema);
+  fastify.addSchema(SignInCenterInputSchema);
   const env = fastify.getEnvs<Env>();
   const centerService = new CenterService(fastify.db);
   const jwtService = new JwtService(env.JWT_SECRET);
