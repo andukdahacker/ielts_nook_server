@@ -6,6 +6,14 @@ import { UpdateUserInput } from "./dto/update_user.input";
 class UserService {
   constructor(private readonly prisma: PrismaClient) {}
 
+  async deleteUser(id: string) {
+    return await this.prisma.user.delete({
+      where: {
+        id,
+      },
+    });
+  }
+
   async findUserByEmail(email: string) {
     return await this.prisma.user.findUnique({
       where: {
@@ -54,12 +62,17 @@ class UserService {
   }
 
   async updateUser(input: UpdateUserInput) {
+    const { userId, role, firstName, lastName, phoneNumber, username } = input;
     const user = await this.prisma.user.update({
       where: {
-        id: input.userId,
+        id: userId,
       },
       data: {
-        ...input,
+        firstName,
+        lastName,
+        phoneNumber,
+        username,
+        role,
       },
     });
 

@@ -1,8 +1,10 @@
 import argon2 from "argon2";
 import { AppJwtPayload } from "../../middlewares/auth.middleware";
 import JwtService from "../../services/jwt.service";
+import { NoDataResponse } from "../../types/response";
 import { CreateUserInput } from "./dto/create_user.input";
 import { CreateUserResponse } from "./dto/create_user.response";
+import { DeleteUserInput } from "./dto/delete_user.input";
 import { GetUserListInput } from "./dto/get_user_list.input";
 import { GetUserListResponse } from "./dto/get_user_list.response";
 import { SignInUserInput } from "./dto/sign_in_user.input";
@@ -16,6 +18,14 @@ class UserController {
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
   ) {}
+
+  async deleteUser(input: DeleteUserInput): Promise<NoDataResponse> {
+    await this.userService.deleteUser(input.userId);
+
+    return {
+      message: "Deleted user successfully"
+    }
+  }
 
   async updateUser(input: UpdateUserInput): Promise<UpdateUserResponse> {
     const user = await this.userService.updateUser(input);

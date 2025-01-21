@@ -5,25 +5,32 @@ import Env from "../../env";
 import authMiddleware from "../../middlewares/auth.middleware";
 import roleMiddleware from "../../middlewares/role.middleware";
 import JwtService from "../../services/jwt.service";
-import { BaseResponseErrorSchema } from "../../types/response";
 import {
-  CreateUserInput,
-  CreateUserInputSchema,
+    BaseResponseErrorSchema,
+    NoDataResponseSchema,
+} from "../../types/response";
+import {
+    CreateUserInput,
+    CreateUserInputSchema,
 } from "./dto/create_user.input";
 import { CreateUserResponseSchema } from "./dto/create_user.response";
 import {
-  GetUserListInput,
-  GetUserListInputSchema,
+    DeleteUserInput,
+    DeleteUserInputSchema,
+} from "./dto/delete_user.input";
+import {
+    GetUserListInput,
+    GetUserListInputSchema,
 } from "./dto/get_user_list.input";
 import { GetUserListResponseSchema } from "./dto/get_user_list.response";
 import {
-  SignInUserInput,
-  SignInUserInputSchema,
+    SignInUserInput,
+    SignInUserInputSchema,
 } from "./dto/sign_in_user.input";
 import { SignInUserResponseSchema } from "./dto/sign_in_user.response";
 import {
-  UpdateUserInput,
-  UpdateUserInputSchema,
+    UpdateUserInput,
+    UpdateUserInputSchema,
 } from "./dto/update_user.input";
 import { UpdateUserResponseSchema } from "./dto/update_user.response";
 import { UserRoleSchema, UserSchema } from "./schema/user.schema";
@@ -37,6 +44,7 @@ async function userRoutes(fastify: FastifyInstance, opts: any) {
   fastify.addSchema(GetUserListInputSchema);
   fastify.addSchema(SignInUserInputSchema);
   fastify.addSchema(UpdateUserInputSchema);
+
   const env = fastify.getEnvs<Env>();
   const userService = new UserService(fastify.db);
   const jwtService = new JwtService(env.JWT_SECRET);
@@ -73,7 +81,24 @@ async function userRoutes(fastify: FastifyInstance, opts: any) {
     handler: async (
       request: FastifyRequest<{ Body: UpdateUserInput }>,
       _reply: FastifyReply,
-    ) => {},
+    ) => userController.updateUser(request.body),
+  });
+
+  fastify.delete("/:userId", {
+    schema: {
+      description: "Delete a user",
+      tags: ["users"],
+      params: DeleteUserInputSchema,
+      response: {
+        200: NoDataResponseSchema,
+        500: BaseResponseErrorSchema,
+      },
+    },
+    preHandler: [authMiddleware, roleMiddleware(["ADMIN"])],
+    handler: async (
+      request: FastifyRequest<{ Params: DeleteUserInput }>,
+      _reply: FastifyReply,
+    ) => userController.deleteUser(request.params),
   });
 
   fastify.get("/list", {
