@@ -1,7 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 import { CreateClassInput } from "./dto/create_class.input";
+import { DeleteClassInput } from "./dto/delete_class.input";
 import { GetClassInput } from "./dto/get_class.input";
 import { GetClassListInput } from "./dto/get_class_list.input";
+import { UpdateClassInput } from "./dto/update_class.input";
 
 class ClassService {
   constructor(private readonly db: PrismaClient) {}
@@ -28,6 +30,13 @@ class ClassService {
           createMany: { data: input.classMember.map((e) => ({ userId: e })) },
         },
       },
+      include: {
+        classMembers: {
+          include: {
+            user: true,
+          },
+        },
+      },
     });
 
     return klass;
@@ -40,10 +49,47 @@ class ClassService {
       skip: input.cursor ? 1 : undefined,
       where: {
         centerId: input.centerId,
+        name: input.searchString
+          ? {
+              contains: input.searchString,
+              mode: "insensitive",
+            }
+          : undefined,
+      },
+      include: {
+        classMembers: {
+          include: {
+            user: true,
+          },
+        },
       },
     });
 
     return klasses;
+  }
+
+  async updateClass(input: UpdateClassInput) {
+    const klass = await this.db.class.update({
+      where: {
+        id: input.classId,
+      },
+      data: {
+        name: input.name,
+        description: input.description,
+        classMembers: {
+          deleteMany: input.removeMembers?.map((e) => ({ userId: e })),
+          createMany: {
+            data: input.addMembers?.map((e) => ({ userId: e })) ?? [],
+          },
+        },
+      },
+    });
+
+    return klass;
+  }
+
+  async deleteClass(input: DeleteClassInput) {
+    await this.db.class.delete({ where: { id: input.classId } });
   }
 }
 

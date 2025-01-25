@@ -5,6 +5,7 @@ export const GetClassListInputSchema = Type.Object(
     take: Type.Number(),
     cursor: Type.Optional(Type.String()),
     centerId: Type.String(),
+    searchString: Type.Optional(Type.String()),
   },
   { $id: "GetClassListInput" },
 );

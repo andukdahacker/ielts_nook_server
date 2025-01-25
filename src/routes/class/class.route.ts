@@ -1,7 +1,10 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import authMiddleware from "../../middlewares/auth.middleware";
 import roleMiddleware from "../../middlewares/role.middleware";
-import { BaseResponseErrorSchema } from "../../types/response";
+import {
+  BaseResponseErrorSchema,
+  NoDataResponseSchema,
+} from "../../types/response";
 import ClassController from "./class.controller";
 import ClassService from "./class.service";
 import {
@@ -9,6 +12,10 @@ import {
   CreateClassInputSchema,
 } from "./dto/create_class.input";
 import { CreateClassResponseSchema } from "./dto/create_class.response";
+import {
+  DeleteClassInput,
+  DeleteClassInputSchema,
+} from "./dto/delete_class.input";
 import { GetClassInput, GetClassInputSchema } from "./dto/get_class.input";
 import { GetClassResponseSchema } from "./dto/get_class.response";
 import {
@@ -16,9 +23,17 @@ import {
   GetClassListInputSchema,
 } from "./dto/get_class_list.input";
 import { GetClassListResponseSchema } from "./dto/get_class_list.response";
+import {
+  UpdateClassInput,
+  UpdateClassInputSchema,
+} from "./dto/update_class.input";
+import { UpdateClassResponseSchema } from "./dto/update_class.response";
+import { ClassSchema } from "./schema/class.schema";
 
 async function classRoutes(fastify: FastifyInstance, opts: any) {
+  fastify.addSchema(ClassSchema);
   fastify.addSchema(GetClassListInputSchema);
+  fastify.addSchema(UpdateClassInputSchema);
   const classService = new ClassService(fastify.db);
   const classController = new ClassController(classService);
 
@@ -53,7 +68,41 @@ async function classRoutes(fastify: FastifyInstance, opts: any) {
     handler: async (
       request: FastifyRequest<{ Params: GetClassInput }>,
       _reply: FastifyReply,
-    ) => {},
+    ) => classController.getClass(request.params),
+  });
+
+  fastify.put("/", {
+    schema: {
+      description: "Update a class",
+      tags: ["class"],
+      body: UpdateClassInputSchema,
+      response: {
+        200: UpdateClassResponseSchema,
+        500: BaseResponseErrorSchema,
+      },
+    },
+    preHandler: [authMiddleware, roleMiddleware(["ADMIN"])],
+    handler: async (
+      request: FastifyRequest<{ Body: UpdateClassInput }>,
+      _reply: FastifyReply,
+    ) => classController.updateClass(request.body),
+  });
+
+  fastify.delete("/:classId", {
+    schema: {
+      description: "Delete a class",
+      tags: ["class"],
+      params: DeleteClassInputSchema,
+      response: {
+        200: NoDataResponseSchema,
+        500: BaseResponseErrorSchema,
+      },
+    },
+    preHandler: [authMiddleware, roleMiddleware(["ADMIN"])],
+    handler: async (
+      request: FastifyRequest<{ Params: DeleteClassInput }>,
+      _reply: FastifyReply,
+    ) => classController.deleteClass(request.params),
   });
 
   fastify.get("/list", {
