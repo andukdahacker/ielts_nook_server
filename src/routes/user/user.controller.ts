@@ -23,8 +23,8 @@ class UserController {
     await this.userService.deleteUser(input.userId);
 
     return {
-      message: "Deleted user successfully"
-    }
+      message: "Deleted user successfully",
+    };
   }
 
   async updateUser(input: UpdateUserInput): Promise<UpdateUserResponse> {
@@ -146,6 +146,7 @@ class UserController {
       id: user.id,
       isCenter: false,
       role: user.role,
+      centerId: user.centerId,
     });
 
     return {

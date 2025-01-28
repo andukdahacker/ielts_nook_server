@@ -8,6 +8,7 @@ export type AppJwtPayload = JwtPayload & {
   email: string;
   isCenter: boolean;
   role: UserRole;
+  centerId: string;
 };
 
 declare module "fastify" {

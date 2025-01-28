@@ -14,13 +14,14 @@ datasource db {
 }
 
 model Center {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String     @id @default(cuid())
+  email     String     @unique
   name      String
   users     User[]
   classes   Class[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  exercises Exercise[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 }
 
 model User {
@@ -57,12 +58,68 @@ model Class {
 }
 
 model ClassMember {
-  classId   String
-  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  classId     String
+  class       Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignments Assignment[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@id([classId, userId])
+}
+
+model Exercise {
+  id         String          @id @default(cuid())
+  title      String
+  content    Json
+  subTypeId  String
+  subType    ExerciseSubType @relation(fields: [subTypeId], references: [id], onDelete: Cascade)
+  centerId   String
+  center     Center          @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  assigments Assignment[]
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+}
+
+model ExerciseSubType {
+  id           String       @id @default(cuid())
+  name         String
+  exerciseType ExerciseType
+  description  String?
+  exercises    Exercise[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+enum ExerciseType {
+  READING
+  LISTENING
+  WRITING
+  SPEAKING
+}
+
+model Assignment {
+  id                 String      @id @default(cuid())
+  title              String
+  dueDate            DateTime?
+  classMember        ClassMember @relation(fields: [classMemberClassId, classMemberUserId], references: [classId, userId], onDelete: Cascade, onUpdate: Cascade)
+  classMemberClassId String
+  classMemberUserId  String
+  exerciseId         String
+  exercise           Exercise    @relation(fields: [exerciseId], references: [id])
+  submission         Submission?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+}
+
+model Submission {
+  id           String     @id @default(cuid())
+  assignmentId String     @unique
+  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+  content      Json
+  grade        Float?
+  feedback     Json
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }

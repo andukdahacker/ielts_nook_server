@@ -72,6 +72,7 @@ class CenterController {
       email: center.email,
       isCenter: true,
       role: "ADMIN",
+      centerId: center.id,
     });
 
     return {
