@@ -65,6 +65,7 @@ class ExerciseController {
     return {
       data: {
         exercise,
+        subType: exercise.subType,
       },
       message: "Get exercise successfully",
     };
@@ -92,10 +93,12 @@ class ExerciseController {
       centerId,
     );
 
+    const mapped = exercises.map((e) => ({ subType: e.subType, exercise: e }));
+
     if (exercises.length < input.take) {
       return {
         data: {
-          nodes: exercises,
+          nodes: mapped,
           pageInfo: {
             hasNextPage: false,
           },
@@ -117,7 +120,7 @@ class ExerciseController {
     if (nextCall.length == 0) {
       return {
         data: {
-          nodes: exercises,
+          nodes: mapped,
           pageInfo: {
             hasNextPage: false,
           },
@@ -128,7 +131,7 @@ class ExerciseController {
 
     return {
       data: {
-        nodes: exercises,
+        nodes: mapped,
         pageInfo: {
           hasNextPage: true,
           cursor,

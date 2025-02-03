@@ -90,10 +90,15 @@ class UserController {
 
     const users = await this.userService.getUserList(input, centerId);
 
+    const mapped = users.map((e) => ({
+      user: e,
+      classes: e.classes.map((c) => c.class),
+    }));
+
     if (users.length < input.take) {
       return {
         data: {
-          nodes: users,
+          nodes: mapped,
           pageInfo: { hasNextPage: false },
         },
         message: "Get user list successfully",
@@ -110,7 +115,7 @@ class UserController {
     if (nextCall.length == 0) {
       return {
         data: {
-          nodes: users,
+          nodes: mapped,
           pageInfo: { hasNextPage: false },
         },
         message: "Get user list successfully",
@@ -119,7 +124,7 @@ class UserController {
 
     return {
       data: {
-        nodes: users,
+        nodes: mapped,
         pageInfo: { hasNextPage: true, cursor },
       },
       message: "Get user list successfully",

@@ -2,7 +2,7 @@ import { Static, Type } from "@sinclair/typebox";
 
 export const CreateExerciseInputSchema = Type.Object({
   subTypeId: Type.String(),
-  title: Type.String(),
+  name: Type.String(),
   content: Type.Any(),
 });
 

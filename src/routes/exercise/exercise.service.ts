@@ -9,10 +9,10 @@ class ExerciseService {
   constructor(private readonly db: PrismaClient) {}
 
   async createExercise(input: CreateExerciseInput, centerId: string) {
-    const { title, content, subTypeId } = input;
+    const { name, content, subTypeId } = input;
     const exercise = await this.db.exercise.create({
       data: {
-        title,
+        name,
         content,
         subType: {
           connect: {
@@ -37,8 +37,11 @@ class ExerciseService {
   async getExercise(input: GetExerciseInput) {
     const exercise = await this.db.exercise.findUnique({
       where: {
-        id: input.id
-      }
+        id: input.id,
+      },
+      include: {
+        subType: true,
+      },
     });
 
     return exercise;
@@ -55,19 +58,27 @@ class ExerciseService {
   }
 
   async getExerciseList(input: GetExerciseListInput, centerId: string) {
-    const { cursor, take, type, subTypeIds } = input;
+    const { cursor, take, type, subTypeIds, isPublic, searchString } = input;
 
     const exercises = await this.db.exercise.findMany({
       take,
       cursor: cursor ? { id: cursor } : undefined,
       skip: cursor ? 1 : undefined,
       where: {
-        centerId,
+        centerId: isPublic ? undefined : centerId,
         OR: [
+          {
+            name: {
+              contains: searchString,
+              mode: "insensitive",
+            },
+          },
           {
             subType: {
               exerciseType: type,
             },
+          },
+          {
             subTypeId: subTypeIds
               ? {
                   in: subTypeIds,
@@ -75,6 +86,9 @@ class ExerciseService {
               : undefined,
           },
         ],
+      },
+      include: {
+        subType: true,
       },
     });
 

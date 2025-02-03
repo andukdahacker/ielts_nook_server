@@ -71,13 +71,14 @@ model ClassMember {
 
 model Exercise {
   id         String          @id @default(cuid())
-  title      String
+  name       String
   content    Json
   subTypeId  String
   subType    ExerciseSubType @relation(fields: [subTypeId], references: [id], onDelete: Cascade)
-  centerId   String
-  center     Center          @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  centerId   String?
+  center     Center?         @relation(fields: [centerId], references: [id], onDelete: Cascade)
   assigments Assignment[]
+  isPublic   Boolean         @default(false)
   createdAt  DateTime        @default(now())
   updatedAt  DateTime        @updatedAt
 }

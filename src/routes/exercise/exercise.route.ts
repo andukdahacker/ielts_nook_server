@@ -36,11 +36,24 @@ import ExerciseService from "./exercise.service";
 import { ExerciseSchema } from "./schema/exercise.schema";
 import { ExerciseSubTypeSchema } from "./schema/exercise_sub_type.schema";
 import { ExerciseTypeSchema } from "./schema/exercise_type.schema";
+import {
+  ReadingExerciseQuestionSchema,
+  ReadingExerciseSchema,
+  ReadingExerciseTaskSchema,
+  ReadingExerciseTypeSchema,
+  ReadingQuestionOptionSchema,
+} from "./schema/reading_exercise.schema";
 
 async function exerciseRoutes(fastify: FastifyInstance, opts: any) {
+  fastify.addSchema(ReadingQuestionOptionSchema);
+  fastify.addSchema(ReadingExerciseQuestionSchema);
+  fastify.addSchema(ReadingExerciseTaskSchema);
+  fastify.addSchema(ReadingExerciseSchema);
+  fastify.addSchema(ReadingExerciseTypeSchema);
   fastify.addSchema(ExerciseTypeSchema);
   fastify.addSchema(ExerciseSchema);
   fastify.addSchema(ExerciseSubTypeSchema);
+  fastify.addSchema(GetExerciseListInputSchema);
 
   const exerciseService = new ExerciseService(fastify.db);
   const exerciseController = new ExerciseController(exerciseService);

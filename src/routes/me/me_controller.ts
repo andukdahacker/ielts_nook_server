@@ -10,7 +10,7 @@ class MeController {
   ) {}
 
   async getMe(jwtPayload: AppJwtPayload): Promise<GetMeResponse> {
-    const { email, id, isCenter } = jwtPayload;
+    const { id, isCenter } = jwtPayload;
 
     if (isCenter) {
       const center = await this.centerService.findCenterById(id);

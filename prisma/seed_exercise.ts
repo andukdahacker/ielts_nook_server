@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import * as argon2 from "argon2";
 import { parseArgs } from "node:util";
 import {
   ReadingExercise,
@@ -11,24 +10,6 @@ async function seed() {
     values: { centerId },
   } = parseArgs({ options: { centerId: { type: "string" } } });
   const prisma = new PrismaClient();
-
-  const hashed = await argon2.hash("Ducdeptraino1@");
-  for (let i = 0; i < 100; i++) {
-    await prisma.user.create({
-      data: {
-        email: `user${i}@gmail.com`,
-        password: hashed,
-        role: "STUDENT",
-        center: {
-          connect: {
-            id: centerId,
-          },
-        },
-        firstName: "User",
-        lastName: `${i}`,
-      },
-    });
-  }
 
   const subtype = await prisma.exerciseSubType.create({
     data: {
@@ -85,7 +66,7 @@ async function seed() {
   const exercise = await prisma.exercise.create({
     data: {
       name: "Ancient Rome",
-      content: JSON.stringify(readingExercise),
+      content: readingExercise,
       subType: {
         connect: {
           id: subtype.id,
@@ -98,6 +79,8 @@ async function seed() {
       },
     },
   });
+
+  console.log("exercise", exercise);
 }
 
 seed()

@@ -105,6 +105,13 @@ class UserService {
       orderBy: {
         createdAt: "desc",
       },
+      include: {
+        classes: {
+          include: {
+            class: true,
+          },
+        },
+      },
     });
 
     return userList;
