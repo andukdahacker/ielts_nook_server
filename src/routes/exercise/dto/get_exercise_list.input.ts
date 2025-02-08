@@ -6,7 +6,6 @@ export const GetExerciseListInputSchema = Type.Object(
     take: Type.Number(),
     cursor: Type.Optional(Type.String()),
     type: Type.Optional(ExerciseTypeSchema),
-    subTypeIds: Type.Optional(Type.Array(Type.String())),
     isPublic: Type.Boolean(),
     searchString: Type.Optional(Type.String()),
   },

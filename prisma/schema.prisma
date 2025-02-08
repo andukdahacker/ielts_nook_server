@@ -70,27 +70,16 @@ model ClassMember {
 }
 
 model Exercise {
-  id         String          @id @default(cuid())
+  id         String       @id @default(cuid())
   name       String
+  type       ExerciseType
   content    Json
-  subTypeId  String
-  subType    ExerciseSubType @relation(fields: [subTypeId], references: [id], onDelete: Cascade)
   centerId   String?
-  center     Center?         @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  center     Center?      @relation(fields: [centerId], references: [id], onDelete: Cascade)
   assigments Assignment[]
-  isPublic   Boolean         @default(false)
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
-}
-
-model ExerciseSubType {
-  id           String       @id @default(cuid())
-  name         String
-  exerciseType ExerciseType
-  description  String?
-  exercises    Exercise[]
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  isPublic   Boolean      @default(false)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
 }
 
 enum ExerciseType {

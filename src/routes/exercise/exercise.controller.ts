@@ -6,8 +6,6 @@ import { GetExerciseInput } from "./dto/get_exercise.input";
 import { GetExerciseResponse } from "./dto/get_exercise.response";
 import { GetExerciseListInput } from "./dto/get_exercise_list.input";
 import { GetExerciseListResponse } from "./dto/get_exercise_list.response";
-import { GetExerciseSubTypeListInput } from "./dto/get_exercise_sub_type_list.input";
-import { GetExerciseSubTypeListResponse } from "./dto/get_exercise_sub_type_list.response";
 import ExerciseService from "./exercise.service";
 
 class ExerciseController {
@@ -65,22 +63,8 @@ class ExerciseController {
     return {
       data: {
         exercise,
-        subType: exercise.subType,
       },
       message: "Get exercise successfully",
-    };
-  }
-
-  async getExerciseSubTypeList(
-    input: GetExerciseSubTypeListInput,
-  ): Promise<GetExerciseSubTypeListResponse> {
-    const subTypes = await this.exerciseService.getExerciseSubTypeList(input);
-
-    return {
-      data: {
-        exerciseSubTypes: subTypes,
-      },
-      message: "Get sub types successfully",
     };
   }
 
@@ -93,12 +77,10 @@ class ExerciseController {
       centerId,
     );
 
-    const mapped = exercises.map((e) => ({ subType: e.subType, exercise: e }));
-
     if (exercises.length < input.take) {
       return {
         data: {
-          nodes: mapped,
+          nodes: exercises,
           pageInfo: {
             hasNextPage: false,
           },
@@ -120,7 +102,7 @@ class ExerciseController {
     if (nextCall.length == 0) {
       return {
         data: {
-          nodes: mapped,
+          nodes: exercises,
           pageInfo: {
             hasNextPage: false,
           },
@@ -131,7 +113,7 @@ class ExerciseController {
 
     return {
       data: {
-        nodes: mapped,
+        nodes: exercises,
         pageInfo: {
           hasNextPage: true,
           cursor,

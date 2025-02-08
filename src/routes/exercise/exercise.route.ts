@@ -26,33 +26,36 @@ import {
   GetExerciseListInputSchema,
 } from "./dto/get_exercise_list.input";
 import { GetExerciseListResponseSchema } from "./dto/get_exercise_list.response";
-import {
-  GetExerciseSubTypeListInput,
-  GetExerciseSubTypeListInputSchema,
-} from "./dto/get_exercise_sub_type_list.input";
-import { GetExerciseSubTypeListResponseSchema } from "./dto/get_exercise_sub_type_list.response";
 import ExerciseController from "./exercise.controller";
 import ExerciseService from "./exercise.service";
 import { ExerciseSchema } from "./schema/exercise.schema";
-import { ExerciseSubTypeSchema } from "./schema/exercise_sub_type.schema";
 import { ExerciseTypeSchema } from "./schema/exercise_type.schema";
 import {
-  ReadingExerciseQuestionSchema,
   ReadingExerciseSchema,
-  ReadingExerciseTaskSchema,
-  ReadingExerciseTypeSchema,
-  ReadingQuestionOptionSchema,
+  ReadingMultipleChoiceQuestionOptionSchema,
+  ReadingMultipleChoiceQuestionSchema,
+  ReadingMultipleChoiceTaskSchema,
+  ReadingTFNGOptionSchema,
+  ReadingTFNGQuestionSchema,
+  ReadingTFNGTaskSchema,
+  ReadingYNNGOptionSchema,
+  ReadingYNNGQuestionSchema,
+  ReadingYNNGTaskSchema,
 } from "./schema/reading_exercise.schema";
 
 async function exerciseRoutes(fastify: FastifyInstance, opts: any) {
-  fastify.addSchema(ReadingQuestionOptionSchema);
-  fastify.addSchema(ReadingExerciseQuestionSchema);
-  fastify.addSchema(ReadingExerciseTaskSchema);
+  fastify.addSchema(ReadingMultipleChoiceQuestionOptionSchema);
+  fastify.addSchema(ReadingMultipleChoiceQuestionSchema);
+  fastify.addSchema(ReadingMultipleChoiceTaskSchema);
+  fastify.addSchema(ReadingTFNGOptionSchema);
+  fastify.addSchema(ReadingTFNGQuestionSchema);
+  fastify.addSchema(ReadingTFNGTaskSchema);
+  fastify.addSchema(ReadingYNNGOptionSchema);
+  fastify.addSchema(ReadingYNNGQuestionSchema);
+  fastify.addSchema(ReadingYNNGTaskSchema);
   fastify.addSchema(ReadingExerciseSchema);
-  fastify.addSchema(ReadingExerciseTypeSchema);
   fastify.addSchema(ExerciseTypeSchema);
   fastify.addSchema(ExerciseSchema);
-  fastify.addSchema(ExerciseSubTypeSchema);
   fastify.addSchema(GetExerciseListInputSchema);
 
   const exerciseService = new ExerciseService(fastify.db);
@@ -119,23 +122,6 @@ async function exerciseRoutes(fastify: FastifyInstance, opts: any) {
         request.params,
         request.jwtPayload.centerId,
       ),
-  });
-
-  fastify.get("/subtype/list", {
-    schema: {
-      description: "Get list of exercises sub types",
-      tags: ["exercise"],
-      querystring: GetExerciseSubTypeListInputSchema,
-      response: {
-        200: GetExerciseSubTypeListResponseSchema,
-        500: BaseResponseErrorSchema,
-      },
-    },
-    preHandler: [authMiddleware],
-    handler: async (
-      request: FastifyRequest<{ Querystring: GetExerciseSubTypeListInput }>,
-      _reply: FastifyReply,
-    ) => exerciseController.getExerciseSubTypeList(request.query),
   });
 
   fastify.get("/list", {

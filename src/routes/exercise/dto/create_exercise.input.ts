@@ -1,9 +1,10 @@
 import { Static, Type } from "@sinclair/typebox";
+import { ExerciseTypeSchema } from "../schema/exercise_type.schema";
 
 export const CreateExerciseInputSchema = Type.Object({
-  subTypeId: Type.String(),
   name: Type.String(),
   content: Type.Any(),
+  type: ExerciseTypeSchema,
 });
 
 export type CreateExerciseInput = Static<typeof CreateExerciseInputSchema>;
