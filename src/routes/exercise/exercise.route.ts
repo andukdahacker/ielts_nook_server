@@ -57,6 +57,7 @@ async function exerciseRoutes(fastify: FastifyInstance, opts: any) {
   fastify.addSchema(ExerciseTypeSchema);
   fastify.addSchema(ExerciseSchema);
   fastify.addSchema(GetExerciseListInputSchema);
+  fastify.addSchema(CreateExerciseInputSchema);
 
   const exerciseService = new ExerciseService(fastify.db);
   const exerciseController = new ExerciseController(exerciseService);
