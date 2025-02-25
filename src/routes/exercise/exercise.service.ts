@@ -3,6 +3,7 @@ import { CreateExerciseInput } from "./dto/create_exercise.input";
 import { DeleteExerciseInput } from "./dto/delete_exercise.input";
 import { GetExerciseInput } from "./dto/get_exercise.input";
 import { GetExerciseListInput } from "./dto/get_exercise_list.input";
+import { UpdateExerciseInput } from "./dto/update_exercise.input";
 
 class ExerciseService {
   constructor(private readonly db: PrismaClient) {}
@@ -19,6 +20,21 @@ class ExerciseService {
             id: centerId,
           },
         },
+      },
+    });
+
+    return exercise;
+  }
+
+  async updateExercise(input: UpdateExerciseInput) {
+    const { id, content, name } = input;
+    const exercise = await this.db.exercise.update({
+      where: {
+        id,
+      },
+      data: {
+        name,
+        content,
       },
     });
 

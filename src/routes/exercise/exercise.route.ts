@@ -26,38 +26,36 @@ import {
   GetExerciseListInputSchema,
 } from "./dto/get_exercise_list.input";
 import { GetExerciseListResponseSchema } from "./dto/get_exercise_list.response";
+import {
+  UpdateExerciseInput,
+  UpdateExerciseInputSchema,
+} from "./dto/update_exercise.input";
+import { UpdateExerciseResponseSchema } from "./dto/update_exercise.response";
 import ExerciseController from "./exercise.controller";
 import ExerciseService from "./exercise.service";
 import { ExerciseSchema } from "./schema/exercise.schema";
 import { ExerciseTypeSchema } from "./schema/exercise_type.schema";
-import {
-  ReadingExerciseSchema,
-  ReadingMultipleChoiceQuestionOptionSchema,
-  ReadingMultipleChoiceQuestionSchema,
-  ReadingMultipleChoiceTaskSchema,
-  ReadingTFNGOptionSchema,
-  ReadingTFNGQuestionSchema,
-  ReadingTFNGTaskSchema,
-  ReadingYNNGOptionSchema,
-  ReadingYNNGQuestionSchema,
-  ReadingYNNGTaskSchema,
-} from "./schema/reading_exercise.schema";
+import { ListeningExerciseSchema } from "./schema/listening_exercise.schema";
+import { ReadingExerciseSchema } from "./schema/reading_exercise.schema";
 
-async function exerciseRoutes(fastify: FastifyInstance, opts: any) {
-  fastify.addSchema(ReadingMultipleChoiceQuestionOptionSchema);
-  fastify.addSchema(ReadingMultipleChoiceQuestionSchema);
-  fastify.addSchema(ReadingMultipleChoiceTaskSchema);
-  fastify.addSchema(ReadingTFNGOptionSchema);
-  fastify.addSchema(ReadingTFNGQuestionSchema);
-  fastify.addSchema(ReadingTFNGTaskSchema);
-  fastify.addSchema(ReadingYNNGOptionSchema);
-  fastify.addSchema(ReadingYNNGQuestionSchema);
-  fastify.addSchema(ReadingYNNGTaskSchema);
+function addSchema(fastify: FastifyInstance) {
+  //Reading
+
   fastify.addSchema(ReadingExerciseSchema);
+
+  //Listening
+  fastify.addSchema(ListeningExerciseSchema);
+
+  //Exercise
   fastify.addSchema(ExerciseTypeSchema);
   fastify.addSchema(ExerciseSchema);
   fastify.addSchema(GetExerciseListInputSchema);
   fastify.addSchema(CreateExerciseInputSchema);
+  fastify.addSchema(UpdateExerciseInputSchema);
+}
+
+async function exerciseRoutes(fastify: FastifyInstance, opts: any) {
+  addSchema(fastify);
 
   const exerciseService = new ExerciseService(fastify.db);
   const exerciseController = new ExerciseController(exerciseService);
@@ -78,6 +76,27 @@ async function exerciseRoutes(fastify: FastifyInstance, opts: any) {
       _reply: FastifyReply,
     ) =>
       exerciseController.createExercise(
+        request.body,
+        request.jwtPayload.centerId,
+      ),
+  });
+
+  fastify.put("/", {
+    schema: {
+      description: "Update an exercise",
+      tags: ["exercise"],
+      body: UpdateExerciseInputSchema,
+      response: {
+        200: UpdateExerciseResponseSchema,
+        500: BaseResponseErrorSchema,
+      },
+    },
+    preHandler: [authMiddleware, roleMiddleware(["ADMIN", "TEACHER"])],
+    handler: async (
+      request: FastifyRequest<{ Body: UpdateExerciseInput }>,
+      _reply,
+    ) =>
+      exerciseController.updateExercise(
         request.body,
         request.jwtPayload.centerId,
       ),

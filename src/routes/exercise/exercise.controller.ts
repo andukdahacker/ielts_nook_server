@@ -6,6 +6,8 @@ import { GetExerciseInput } from "./dto/get_exercise.input";
 import { GetExerciseResponse } from "./dto/get_exercise.response";
 import { GetExerciseListInput } from "./dto/get_exercise_list.input";
 import { GetExerciseListResponse } from "./dto/get_exercise_list.response";
+import { UpdateExerciseInput } from "./dto/update_exercise.input";
+import { UpdateExerciseResponse } from "./dto/update_exercise.response";
 import ExerciseService from "./exercise.service";
 
 class ExerciseController {
@@ -22,6 +24,28 @@ class ExerciseController {
         exercise,
       },
       message: "Created exercise successfully",
+    };
+  }
+
+  async updateExercise(
+    input: UpdateExerciseInput,
+    centerId: string,
+  ): Promise<UpdateExerciseResponse> {
+    const exercise = await this.exerciseService.getExercise(input);
+
+    if (!exercise) {
+      throw new Error("Cannot find exercise");
+    }
+
+    if (exercise?.centerId != centerId) {
+      throw new Error("Unauthorized");
+    }
+
+    const updatedExercise = await this.exerciseService.updateExercise(input);
+
+    return {
+      data: updatedExercise,
+      message: "Updated exercise successfully",
     };
   }
 
