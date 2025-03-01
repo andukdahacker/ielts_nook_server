@@ -8,6 +8,7 @@ import { IncomingMessage, Server, ServerResponse } from "http";
 import Env from "./env";
 import firebasePlugin from "./plugins/firebase.plugin";
 import prismaPlugin from "./plugins/prisma.plugin";
+import s3Plugin from "./plugins/s3.plugin";
 import routes from "./routes/routes";
 import JwtService from "./services/jwt.service";
 
@@ -48,6 +49,21 @@ const build = async () => {
           type: "string",
         },
         FIREBASE_PRIVATE_KEY: {
+          type: "string",
+        },
+        S3_REGION: {
+          type: "string",
+        },
+        S3_ACCESS_KEY: {
+          type: "string",
+        },
+        S3_SECRET_KEY: {
+          type: "string",
+        },
+        S3_BUCKET_NAME: {
+          type: "string",
+        },
+        S3_CLOUDFRONT_DOMAIN: {
           type: "string",
         },
       },
@@ -134,6 +150,8 @@ const build = async () => {
         : undefined,
     },
   });
+
+  app.register(s3Plugin);
 
   app.register(routes, { prefix: "/api" });
 

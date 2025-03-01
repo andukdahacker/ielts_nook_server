@@ -1,8 +1,11 @@
+import fastifyMultipart from "@fastify/multipart";
 import { FastifyInstance } from "fastify";
 import { FastifyReply } from "fastify/types/reply";
 import { FastifyRequest } from "fastify/types/request";
+import Env from "../../env";
 import authMiddleware from "../../middlewares/auth.middleware";
 import roleMiddleware from "../../middlewares/role.middleware";
+import S3Service from "../../services/s3_service";
 import {
   BaseResponseErrorSchema,
   NoDataResponseSchema,
@@ -16,6 +19,10 @@ import {
   DeleteExerciseInput,
   DeleteExerciseInputSchema,
 } from "./dto/delete_exercise.input";
+import {
+  DeleteListeningFileInput,
+  DeleteListeningFileInputSchema,
+} from "./dto/delete_listening_file.input";
 import {
   GetExerciseInput,
   GetExerciseInputSchema,
@@ -31,6 +38,11 @@ import {
   UpdateExerciseInputSchema,
 } from "./dto/update_exercise.input";
 import { UpdateExerciseResponseSchema } from "./dto/update_exercise.response";
+import {
+  UploadListeningFileInput,
+  UploadListeningFileInputSchema,
+} from "./dto/upload_listening_file.input";
+import { UploadListeningFileResponseSchema } from "./dto/upload_listening_file.response";
 import ExerciseController from "./exercise.controller";
 import ExerciseService from "./exercise.service";
 import { ExerciseSchema } from "./schema/exercise.schema";
@@ -52,13 +64,19 @@ function addSchema(fastify: FastifyInstance) {
   fastify.addSchema(GetExerciseListInputSchema);
   fastify.addSchema(CreateExerciseInputSchema);
   fastify.addSchema(UpdateExerciseInputSchema);
+  fastify.addSchema(CreateExerciseResponseSchema);
+  fastify.addSchema(UploadListeningFileInputSchema);
+  fastify.addSchema(DeleteListeningFileInputSchema);
 }
 
 async function exerciseRoutes(fastify: FastifyInstance, opts: any) {
   addSchema(fastify);
-
+  const env = fastify.getEnvs<Env>();
   const exerciseService = new ExerciseService(fastify.db);
-  const exerciseController = new ExerciseController(exerciseService);
+  const s3Service = new S3Service(fastify.s3, {
+    cloudfrontDomain: env.S3_CLOUDFRONT_DOMAIN,
+  });
+  const exerciseController = new ExerciseController(exerciseService, s3Service);
 
   fastify.post("/", {
     schema: {
@@ -99,6 +117,27 @@ async function exerciseRoutes(fastify: FastifyInstance, opts: any) {
       exerciseController.updateExercise(
         request.body,
         request.jwtPayload.centerId,
+      ),
+  });
+
+  fastify.delete("/deleteListeningFile", {
+    schema: {
+      description: "Delete listening file for an exercise",
+      tags: ["exercise"],
+      body: DeleteListeningFileInputSchema,
+      response: {
+        200: NoDataResponseSchema,
+        500: BaseResponseErrorSchema,
+      },
+    },
+    preHandler: [authMiddleware, roleMiddleware(["ADMIN", "TEACHER"])],
+    handler: async (
+      request: FastifyRequest<{ Body: DeleteListeningFileInput }>,
+      _reply: FastifyReply,
+    ) =>
+      await exerciseController.removeListeningFile(
+        request.body,
+        env.S3_BUCKET_NAME,
       ),
   });
 
@@ -163,6 +202,42 @@ async function exerciseRoutes(fastify: FastifyInstance, opts: any) {
         request.query,
         request.jwtPayload.centerId,
       ),
+  });
+
+  fastify.register(fastifyMultipart, {
+    attachFieldsToBody: "keyValues",
+    limits: { fileSize: 1024 * 1024 * 25 },
+    throwFileSizeLimit: true,
+  });
+
+  fastify.post("/uploadListeningFile", {
+    schema: {
+      description: "Upload listening file for an exercise",
+      tags: ["exercise"],
+      consumes: ["multipart/form-data"],
+      body: UploadListeningFileInputSchema,
+      response: {
+        200: UploadListeningFileResponseSchema,
+        500: BaseResponseErrorSchema,
+      },
+    },
+    preHandler: [authMiddleware, roleMiddleware(["ADMIN", "TEACHER"])],
+    handler: async (
+      request: FastifyRequest<{ Body: UploadListeningFileInput }>,
+      _reply: FastifyReply,
+    ) => {
+      const file = await request.body.file;
+
+      if (!file) {
+        throw new Error("Cannot get file");
+      }
+
+      return exerciseController.uploadListeningFile(
+        file,
+        request.body,
+        env.S3_BUCKET_NAME,
+      );
+    },
   });
 }
 

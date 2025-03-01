@@ -1,10 +1,20 @@
 import { Static, TSchema, Type } from "@sinclair/typebox";
 
-const BaseResponseSchema = <T extends TSchema>(schema: T) =>
-  Type.Object({
-    data: schema,
-    message: Type.String(),
-  });
+interface BaseResponseSchemaOpts {
+  $id?: string;
+}
+
+const BaseResponseSchema = <T extends TSchema>(
+  schema: T,
+  opts?: BaseResponseSchemaOpts,
+) =>
+  Type.Object(
+    {
+      data: schema,
+      message: Type.String(),
+    },
+    { $id: opts?.$id },
+  );
 
 const NoDataResponseSchema = Type.Object({
   message: Type.String(),

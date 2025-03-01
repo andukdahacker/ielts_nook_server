@@ -6,6 +6,9 @@ export const CreateExerciseResponseSchema = BaseResponseSchema(
   Type.Object({
     exercise: ExerciseSchema,
   }),
+  {
+    $id: "CreateExerciseResponseSchema",
+  },
 );
 
 export type CreateExerciseResponse = Static<

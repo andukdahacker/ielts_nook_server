@@ -42,7 +42,11 @@ export const ListeningMultipleChoiceTaskSchema = Type.Object(
 );
 export const ListeningExerciseSchema = Type.Object(
   {
-    file: Type.String(),
+    file: Type.Object({
+      url: Type.String(),
+      key: Type.String(),
+      fileName: Type.String(),
+    }),
     tasks: Type.Array(Type.Union([ListeningMultipleChoiceTaskSchema])),
   },
   { $id: "ListeningExercise" },
