@@ -93,7 +93,7 @@ model Assignment {
   id                 String      @id @default(cuid())
   title              String
   dueDate            DateTime?
-  classMember        ClassMember @relation(fields: [classMemberClassId, classMemberUserId], references: [classId, userId], onDelete: Cascade, onUpdate: Cascade)
+  classMember        ClassMember @relation(fields: [classMemberClassId, classMemberUserId], references: [classId, userId], onDelete: Cascade)
   classMemberClassId String
   classMemberUserId  String
   exerciseId         String

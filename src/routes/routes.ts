@@ -1,4 +1,5 @@
 import { FastifyInstance } from "fastify";
+import assignmentRoutes from "./assignment/assignment.routes";
 import centerRoutes from "./center/center.route";
 import classRoutes from "./class/class.route";
 import exerciseRoutes from "./exercise/exercise.route";
@@ -11,6 +12,7 @@ async function routes(fastify: FastifyInstance, opts: any) {
   fastify.register(userRoutes, { prefix: "/user" });
   fastify.register(classRoutes, { prefix: "/class" });
   fastify.register(exerciseRoutes, { prefix: "/exercise" });
+  fastify.register(assignmentRoutes, { prefix: "/assignment" });
 }
 
 export default routes;

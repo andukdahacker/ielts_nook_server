@@ -5,6 +5,7 @@ import { CreateExerciseInput } from "./dto/create_exercise.input";
 import { CreateExerciseResponse } from "./dto/create_exercise.response";
 import { DeleteExerciseInput } from "./dto/delete_exercise.input";
 import { DeleteListeningFileInput } from "./dto/delete_listening_file.input";
+import { DeleteWritingImageInput } from "./dto/delete_writing_image.input";
 import { GetExerciseInput } from "./dto/get_exercise.input";
 import { GetExerciseResponse } from "./dto/get_exercise.response";
 import { GetExerciseListInput } from "./dto/get_exercise_list.input";
@@ -13,6 +14,8 @@ import { UpdateExerciseInput } from "./dto/update_exercise.input";
 import { UpdateExerciseResponse } from "./dto/update_exercise.response";
 import { UploadListeningFileInput } from "./dto/upload_listening_file.input";
 import { UploadListeningFileResponse } from "./dto/upload_listening_file.response";
+import { UploadWritingImageInput } from "./dto/upload_writing_image.input";
+import { UploadWritingImageResponse } from "./dto/upload_writing_image.response";
 import ExerciseService from "./exercise.service";
 
 class ExerciseController {
@@ -220,6 +223,70 @@ class ExerciseController {
 
     return {
       message: "Removed listening file successfully",
+    };
+  }
+
+  async removeWritingImage(input: DeleteWritingImageInput, bucketName: string): Promise<NoDataResponse> {
+    const key = input.key.split("/").pop();
+
+    if(!key) {
+      throw new Error("Cannot get key");
+    }
+
+    await this.s3Service.deleteFile({ key, bucketName });
+
+    const exercise = await this.exerciseService.getExercise({ id: input.id });
+
+    if(!exercise) {
+      throw new Error("Cannot find exercise");
+    }
+
+    const content = exercise.content as Prisma.JsonObject;
+
+    content["file"] = null;
+
+    await this.exerciseService.updateExercise({id: input.id, content});
+
+    return {
+      message: "Removed writing image successfully"
+    }
+  }
+
+  async uploadWritingImage(
+    input: UploadWritingImageInput,
+    bucketName: string,
+  ): Promise<UploadWritingImageResponse> {
+    const exercise = await this.exerciseService.getExercise({ id: input.id });
+
+    if (!exercise) {
+      throw new Error("Cannot find exercise");
+    }
+
+    const result = await this.s3Service.uploadFile({
+      bucketName,
+      fileName: input.fileName,
+      body: Buffer.from(input.file),
+    });
+
+    const content = exercise.content as Prisma.JsonObject;
+
+    const newContent = {
+      ...content,
+      file: {
+        url: result.url,
+        key: result.key,
+        fileName: result.fileName,
+      },
+    };
+
+    const updated = await this.exerciseService.updateExercise({
+      id: input.id,
+      content: newContent,
+    });
+
+    return {
+      data: updated,
+      message: "Upload successfully",
     };
   }
 }
