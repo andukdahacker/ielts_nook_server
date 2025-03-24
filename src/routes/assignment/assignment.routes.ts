@@ -17,11 +17,11 @@ import {
   DeleteAssignmentsInput,
   DeleteAssignmentsInputSchema,
 } from "./dto/delete_assignments.input";
-import { GetAssignmentsByExerciseResponseSchema } from "./dto/get_assignments.response";
 import {
   GetAssignmentsByExerciseInput,
   GetAssignmentsByExerciseInputSchema,
 } from "./dto/get_assignments_by_exercise.input";
+import { GetAssignmentsByExerciseResponseSchema } from "./dto/get_assignments_by_exercise.response";
 import {
   UpdateAssignmentInput,
   UpdateAssignmentInputSchema,
@@ -33,6 +33,7 @@ function assignmentRoutes(fastify: FastifyInstance, opts: any) {
   fastify.addSchema(AssignmentSchema);
   fastify.addSchema(CreateAssignmentsInputSchema);
   fastify.addSchema(CreateAssignmentsResponseSchema);
+  fastify.addSchema(GetAssignmentsByExerciseResponseSchema);
 
   const assignmentService = new AssignmentService(fastify.db);
   const assignmentController = new AssignmentController(assignmentService);

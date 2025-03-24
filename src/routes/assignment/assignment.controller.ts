@@ -3,8 +3,8 @@ import AssignmentService from "./assignment.service";
 import { CreateAssignmentsInput } from "./dto/create_assignments.input";
 import { CreateAssignmentResponse } from "./dto/create_assignments.response";
 import { DeleteAssignmentsInput } from "./dto/delete_assignments.input";
-import { GetAssignmentsByExerciseResponse } from "./dto/get_assignments.response";
 import { GetAssignmentsByExerciseInput } from "./dto/get_assignments_by_exercise.input";
+import { GetAssignmentsByExerciseResponse } from "./dto/get_assignments_by_exercise.response";
 import { UpdateAssignmentInput } from "./dto/update_assignments.input";
 import { UpdateAssignmentsResponse } from "./dto/update_assignments.response";
 
@@ -34,6 +34,7 @@ class AssignmentController {
       return {
         assignment: e,
         user: e.classMember.user,
+        class: e.classMember.class,
       };
     });
 

@@ -7,49 +7,49 @@ import authMiddleware from "../../middlewares/auth.middleware";
 import roleMiddleware from "../../middlewares/role.middleware";
 import S3Service from "../../services/s3_service";
 import {
-  BaseResponseErrorSchema,
-  NoDataResponseSchema,
+    BaseResponseErrorSchema,
+    NoDataResponseSchema,
 } from "../../types/response";
 import {
-  CreateExerciseInput,
-  CreateExerciseInputSchema,
+    CreateExerciseInput,
+    CreateExerciseInputSchema,
 } from "./dto/create_exercise.input";
 import { CreateExerciseResponseSchema } from "./dto/create_exercise.response";
 import {
-  DeleteExerciseInput,
-  DeleteExerciseInputSchema,
+    DeleteExerciseInput,
+    DeleteExerciseInputSchema,
 } from "./dto/delete_exercise.input";
 import {
-  DeleteListeningFileInput,
-  DeleteListeningFileInputSchema,
+    DeleteListeningFileInput,
+    DeleteListeningFileInputSchema,
 } from "./dto/delete_listening_file.input";
 import {
-  DeleteWritingImageInput,
-  DeleteWritingImageInputSchema,
+    DeleteWritingImageInput,
+    DeleteWritingImageInputSchema,
 } from "./dto/delete_writing_image.input";
 import {
-  GetExerciseInput,
-  GetExerciseInputSchema,
+    GetExerciseInput,
+    GetExerciseInputSchema,
 } from "./dto/get_exercise.input";
 import { GetExerciseResponseSchema } from "./dto/get_exercise.response";
 import {
-  GetExerciseListInput,
-  GetExerciseListInputSchema,
+    GetExerciseListInput,
+    GetExerciseListInputSchema,
 } from "./dto/get_exercise_list.input";
 import { GetExerciseListResponseSchema } from "./dto/get_exercise_list.response";
 import {
-  UpdateExerciseInput,
-  UpdateExerciseInputSchema,
+    UpdateExerciseInput,
+    UpdateExerciseInputSchema,
 } from "./dto/update_exercise.input";
 import { UpdateExerciseResponseSchema } from "./dto/update_exercise.response";
 import {
-  UploadListeningFileInput,
-  UploadListeningFileInputSchema,
+    UploadListeningFileInput,
+    UploadListeningFileInputSchema,
 } from "./dto/upload_listening_file.input";
 import { UploadListeningFileResponseSchema } from "./dto/upload_listening_file.response";
 import {
-  UploadWritingImageInput,
-  UploadWritingImageInputSchema,
+    UploadWritingImageInput,
+    UploadWritingImageInputSchema,
 } from "./dto/upload_writing_image.input";
 import { UploadWritingImageResponseSchema } from "./dto/upload_writing_image.response";
 import ExerciseController from "./exercise.controller";
@@ -174,6 +174,7 @@ async function exerciseRoutes(fastify: FastifyInstance, opts: any) {
       exerciseController.deleteExercise(
         request.params,
         request.jwtPayload.centerId,
+        env.S3_BUCKET_NAME
       ),
   });
 

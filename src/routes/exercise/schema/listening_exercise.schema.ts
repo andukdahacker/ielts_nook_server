@@ -40,6 +40,7 @@ export const ListeningMultipleChoiceTaskSchema = Type.Object(
   },
   { $id: "ListeningMultipleChoiceTask" },
 );
+
 export const ListeningExerciseSchema = Type.Object(
   {
     file: Type.Object({

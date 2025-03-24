@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { JsonObject } from "@prisma/client/runtime/library";
 import S3Service from "../../services/s3_service";
 import { NoDataResponse } from "../../types/response";
 import { CreateExerciseInput } from "./dto/create_exercise.input";
@@ -63,6 +64,7 @@ class ExerciseController {
   async deleteExercise(
     input: DeleteExerciseInput,
     centerId: string,
+    bucketName: string,
   ): Promise<NoDataResponse> {
     const exercise = await this.exerciseService.getExercise(input);
 
@@ -72,6 +74,16 @@ class ExerciseController {
 
     if (exercise?.centerId != centerId) {
       throw new Error("Unauthorized");
+    }
+
+    const content = exercise.content as JsonObject;
+
+    if(content["file"]) {
+      const file = content["file"] as JsonObject;
+      const key = file["key"];
+      if(key) {
+        await this.s3Service.deleteFile({key: key as string, bucketName})
+      }
     }
 
     await this.exerciseService.deleteExercise(input);

@@ -16,6 +16,7 @@ class AssignmentService {
         classMember: {
           include: {
             user: true,
+            class: true,
           },
         },
       },

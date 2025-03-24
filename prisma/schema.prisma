@@ -90,17 +90,24 @@ enum ExerciseType {
 }
 
 model Assignment {
-  id                 String      @id @default(cuid())
+  id                 String           @id @default(cuid())
   title              String
   dueDate            DateTime?
-  classMember        ClassMember @relation(fields: [classMemberClassId, classMemberUserId], references: [classId, userId], onDelete: Cascade)
+  classMember        ClassMember      @relation(fields: [classMemberClassId, classMemberUserId], references: [classId, userId], onDelete: Cascade)
   classMemberClassId String
   classMemberUserId  String
   exerciseId         String
-  exercise           Exercise    @relation(fields: [exerciseId], references: [id])
+  exercise           Exercise         @relation(fields: [exerciseId], references: [id])
   submission         Submission?
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
+  status             AssignmentStatus @default(ASSIGNED)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+}
+
+enum AssignmentStatus {
+  ASSIGNED
+  SUBMITTED
+  REVIEWED
 }
 
 model Submission {
