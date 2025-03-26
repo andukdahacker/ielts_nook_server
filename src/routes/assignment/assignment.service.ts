@@ -1,7 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 import { CreateAssignmentsInput } from "./dto/create_assignments.input";
 import { DeleteAssignmentsInput } from "./dto/delete_assignments.input";
+import { GetAssignmentInput } from "./dto/get_assignment.input";
 import { GetAssignmentsByExerciseInput } from "./dto/get_assignments_by_exercise.input";
+import { GetAssignmentsByUserInput } from "./dto/get_assignments_by_user.input";
 import { UpdateAssignmentInput } from "./dto/update_assignments.input";
 
 class AssignmentService {
@@ -23,6 +25,44 @@ class AssignmentService {
     });
 
     return assignments;
+  }
+
+  async getAssignmentsByUser(input: GetAssignmentsByUserInput) {
+    const assignments = await this.db.assignment.findMany({
+      take: input.take,
+      skip: input.cursor ? 1 : undefined,
+      cursor: input.cursor
+        ? {
+            id: input.cursor,
+          }
+        : undefined,
+      where: {
+        classMemberUserId: input.userId,
+      },
+      include: {
+        classMember: {
+          include: {
+            class: true,
+          },
+        },
+        exercise: true,
+      },
+    });
+
+    return assignments;
+  }
+
+  async getAssignment(input: GetAssignmentInput) {
+    const assignment = await this.db.assignment.findUnique({
+      where: {
+        id: input.id,
+      },
+      include: {
+        exercise: true,
+      },
+    });
+
+    return assignment;
   }
 
   async createAssigments(input: CreateAssignmentsInput) {
@@ -47,6 +87,7 @@ class AssignmentService {
       data: {
         dueDate: input.dueDate,
         title: input.title,
+        status: input.status,
       },
     });
 

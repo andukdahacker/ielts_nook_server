@@ -97,7 +97,7 @@ model Assignment {
   classMemberClassId String
   classMemberUserId  String
   exerciseId         String
-  exercise           Exercise         @relation(fields: [exerciseId], references: [id])
+  exercise           Exercise         @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
   submission         Submission?
   status             AssignmentStatus @default(ASSIGNED)
   createdAt          DateTime         @default(now())
@@ -113,10 +113,10 @@ enum AssignmentStatus {
 model Submission {
   id           String     @id @default(cuid())
   assignmentId String     @unique
-  assignment   Assignment @relation(fields: [assignmentId], references: [id])
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
   content      Json
-  grade        Float?
-  feedback     Json
+  grade        Json?
+  feedback     Json?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 }

@@ -18,10 +18,20 @@ import {
   DeleteAssignmentsInputSchema,
 } from "./dto/delete_assignments.input";
 import {
+  GetAssignmentInput,
+  GetAssignmentInputSchema,
+} from "./dto/get_assignment.input";
+import { GetAssignmentResponseSchema } from "./dto/get_assignment.response";
+import {
   GetAssignmentsByExerciseInput,
   GetAssignmentsByExerciseInputSchema,
 } from "./dto/get_assignments_by_exercise.input";
 import { GetAssignmentsByExerciseResponseSchema } from "./dto/get_assignments_by_exercise.response";
+import {
+  GetAssignmentsByUserInput,
+  GetAssignmentsByUserInputSchema,
+} from "./dto/get_assignments_by_user.input";
+import { GetAssignmentsByUserResponseSchema } from "./dto/get_assignments_by_user.response";
 import {
   UpdateAssignmentInput,
   UpdateAssignmentInputSchema,
@@ -34,6 +44,7 @@ function assignmentRoutes(fastify: FastifyInstance, opts: any) {
   fastify.addSchema(CreateAssignmentsInputSchema);
   fastify.addSchema(CreateAssignmentsResponseSchema);
   fastify.addSchema(GetAssignmentsByExerciseResponseSchema);
+  fastify.addSchema(GetAssignmentsByUserInputSchema);
 
   const assignmentService = new AssignmentService(fastify.db);
   const assignmentController = new AssignmentController(assignmentService);
@@ -87,6 +98,40 @@ function assignmentRoutes(fastify: FastifyInstance, opts: any) {
       request: FastifyRequest<{ Querystring: GetAssignmentsByExerciseInput }>,
       _reply: FastifyReply,
     ) => await assignmentController.getAssignmentsByExercise(request.query),
+  });
+
+  fastify.get("/student", {
+    schema: {
+      description: "Get student's assignments",
+      tags: ["assignment"],
+      querystring: GetAssignmentsByUserInputSchema,
+      response: {
+        200: GetAssignmentsByUserResponseSchema,
+        500: BaseResponseErrorSchema,
+      },
+    },
+    preHandler: [authMiddleware, roleMiddleware(["STUDENT"])],
+    handler: async (
+      request: FastifyRequest<{ Querystring: GetAssignmentsByUserInput }>,
+      _reply: FastifyReply,
+    ) => assignmentController.getAssigmentsByUser(request.query),
+  });
+
+  fastify.get("/:id", {
+    schema: {
+      description: "Get assignment",
+      tags: ["assignment"],
+      params: GetAssignmentInputSchema,
+      response: {
+        200: GetAssignmentResponseSchema,
+        500: BaseResponseErrorSchema,
+      },
+    },
+    preHandler: [authMiddleware],
+    handler: async (
+      request: FastifyRequest<{ Params: GetAssignmentInput }>,
+      _reply: FastifyReply,
+    ) => assignmentController.getAssignment(request.params),
   });
 
   fastify.delete("/", {
