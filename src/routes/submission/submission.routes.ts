@@ -13,10 +13,12 @@ import { CreateSubmissionResponseSchema } from "./dto/create_submission.response
 import { SubmissionSchema } from "./schema/submission.schema";
 import SubmissionController from "./submission.controller";
 import SubmissionService from "./submission.service";
+import { SubmissionContentSchema } from "./schema/submission_content.schema";
 
 function submissionRoutes(fastify: FastifyInstance, opts: any) {
   fastify.addSchema(SubmissionSchema);
   fastify.addSchema(CreateSubmissionInputSchema);
+  fastify.addSchema(SubmissionContentSchema);
   const submissionService = new SubmissionService(fastify.db);
   const assignmentService = new AssignmentService(fastify.db);
   const submissionController = new SubmissionController(
