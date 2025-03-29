@@ -59,6 +59,7 @@ class AssignmentService {
       },
       include: {
         exercise: true,
+        submission: true,
       },
     });
 

@@ -120,6 +120,7 @@ class AssignmentController {
       data: {
         assignment: assignment,
         exercise: assignment.exercise,
+        submission: assignment.submission,
       },
       message: "Get assignment successfully",
     };

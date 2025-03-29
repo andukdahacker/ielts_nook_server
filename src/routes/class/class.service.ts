@@ -8,6 +8,16 @@ import { UpdateClassInput } from "./dto/update_class.input";
 class ClassService {
   constructor(private readonly db: PrismaClient) {}
 
+  async getClassByUserId(userId: string) {
+    const klasses = await this.db.classMember.findMany({
+      where: {
+        userId,
+      },
+    });
+
+    return klasses;
+  }
+
   async getClassById(input: GetClassInput) {
     const klass = await this.db.class.findUnique({
       where: { id: input.classId },
