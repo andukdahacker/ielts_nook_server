@@ -4,9 +4,10 @@ import { DeleteClassInput } from "./dto/delete_class.input";
 import { GetClassInput } from "./dto/get_class.input";
 import { GetClassListInput } from "./dto/get_class_list.input";
 import { UpdateClassInput } from "./dto/update_class.input";
+import { GetClassListByUserInput } from "./dto/get_class_list_by_user.input";
 
 class ClassService {
-  constructor(private readonly db: PrismaClient) {}
+  constructor(private readonly db: PrismaClient) { }
 
   async getClassByUserId(userId: string) {
     const klasses = await this.db.classMember.findMany({
@@ -21,6 +22,19 @@ class ClassService {
   async getClassById(input: GetClassInput) {
     const klass = await this.db.class.findUnique({
       where: { id: input.classId },
+      include: {
+        classMembers: {
+          include: {
+            user: true,
+            assignments: {
+              include: {
+                submission: true,
+                exercise: true
+              }
+            }
+          },
+        },
+      }
     });
 
     return klass;
@@ -61,9 +75,39 @@ class ClassService {
         centerId: input.centerId,
         name: input.searchString
           ? {
-              contains: input.searchString,
-              mode: "insensitive",
-            }
+            contains: input.searchString,
+            mode: "insensitive",
+          }
+          : undefined,
+      },
+      include: {
+        classMembers: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    return klasses;
+  }
+
+  async getClassListByUser(input: GetClassListByUserInput) {
+    const klasses = await this.db.class.findMany({
+      take: input.take,
+      skip: input.cursor ? 1 : undefined,
+      cursor: input.cursor ? { id: input.cursor } : undefined,
+      where: {
+        classMembers: {
+          some: {
+            userId: input.userId,
+          },
+        },
+        name: input.searchString
+          ? {
+            contains: input.searchString,
+            mode: "insensitive",
+          }
           : undefined,
       },
       include: {

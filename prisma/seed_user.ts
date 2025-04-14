@@ -1,14 +1,19 @@
 import { PrismaClient } from "@prisma/client";
 import * as argon2 from "argon2";
-import { parseArgs } from "node:util";
 
 async function seed() {
-  const {
-    values: { centerId },
-  } = parseArgs({ options: { centerId: { type: "string" } } });
   const prisma = new PrismaClient();
 
   const hashed = await argon2.hash("Ducdeptraino1@");
+  
+  // Create a center
+  const center = await prisma.center.create({
+    data: {
+      email: 'doanduc227@gmail.com',
+      name: "Duc's nook",
+    }
+  })
+
   for (let i = 0; i < 100; i++) {
     await prisma.user.create({
       data: {
@@ -17,7 +22,7 @@ async function seed() {
         role: "STUDENT",
         center: {
           connect: {
-            id: centerId,
+            id: center.id,
           },
         },
         firstName: "User",

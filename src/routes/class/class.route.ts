@@ -29,11 +29,13 @@ import {
 } from "./dto/update_class.input";
 import { UpdateClassResponseSchema } from "./dto/update_class.response";
 import { ClassSchema } from "./schema/class.schema";
+import { GetClassListByUserInput, GetClassListByUserInputSchema } from "./dto/get_class_list_by_user.input";
 
 async function classRoutes(fastify: FastifyInstance, opts: any) {
   fastify.addSchema(ClassSchema);
   fastify.addSchema(GetClassListInputSchema);
   fastify.addSchema(UpdateClassInputSchema);
+  fastify.addSchema(GetClassListByUserInputSchema)
   const classService = new ClassService(fastify.db);
   const classController = new ClassController(classService);
 
@@ -54,7 +56,7 @@ async function classRoutes(fastify: FastifyInstance, opts: any) {
     ) => classController.createClass(request.body),
   });
 
-  fastify.get("/:id", {
+  fastify.get("/:classId", {
     schema: {
       description: "Get a class",
       tags: ["class"],
@@ -121,6 +123,23 @@ async function classRoutes(fastify: FastifyInstance, opts: any) {
       _reply: FastifyReply,
     ) => await classController.getClassList(request.query),
   });
+
+  fastify.get("/list/user", {
+    schema: {
+      description: "Get class list by user id",
+      tags: ["class"],
+      querystring: GetClassListByUserInputSchema,
+      response: {
+        200: GetClassListResponseSchema,
+        500: BaseResponseErrorSchema,
+      }
+    },
+    preHandler: [authMiddleware, roleMiddleware(["ADMIN", "TEACHER"])],
+    handler: async (
+      request: FastifyRequest<{ Querystring: GetClassListByUserInput }>,
+      _reply: FastifyReply,
+    ) => await classController.getClassListByUser(request.query),
+  })
 }
 
 export default classRoutes;
