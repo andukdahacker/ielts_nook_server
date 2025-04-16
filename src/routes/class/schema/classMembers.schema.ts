@@ -1,12 +1,11 @@
-import { Static, Type } from "@sinclair/typebox";
-import { UserSchema } from "../../user/schema/user.schema";
-import { ClassSchema } from "./class.schema";
+import { Static, Type } from '@sinclair/typebox';
 
-export const ClassMemberSchema = Type.Object({
-  classId: Type.String(),
-  class: Type.Optional(ClassSchema),
-  userId: Type.String(),
-  user: Type.Optional(UserSchema),
-});
+export const ClassMemberSchema = Type.Object(
+    {
+        classId: Type.String(),
+        userId: Type.String(),
+    },
+    { $id: 'ClassMember' },
+);
 
 export type ClassMember = Static<typeof ClassMemberSchema>;
