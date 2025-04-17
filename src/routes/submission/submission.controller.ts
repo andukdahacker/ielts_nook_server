@@ -1,111 +1,172 @@
-import AssignmentService from "../assignment/assignment.service";
-import ClassService from "../class/class.service";
-import UserService from "../user/user.service";
-import { CreateSubmissionInput } from "./dto/create_submission.input";
-import { CreateSubmissionResponse } from "./dto/create_submission.response";
-import { GetSubmissionInput } from "./dto/get_submission.input";
-import { GetSubmissionResponse } from "./dto/get_submission.response";
-import { GetSubmissionListInput } from "./dto/get_submission_list.input";
-import { GetSubmissionListResponse } from "./dto/get_submission_list.response";
-import SubmissionService from "./submission.service";
+import AssignmentService from '../assignment/assignment.service';
+import ClassService from '../class/class.service';
+import { Exercise } from '../exercise/schema/exercise.schema';
+import { ListeningExercise } from '../exercise/schema/listening_exercise.schema';
+import { ReadingExercise } from '../exercise/schema/reading_exercise.schema';
+import { CreateSubmissionInput } from './dto/create_submission.input';
+import { CreateSubmissionResponse } from './dto/create_submission.response';
+import { GetSubmissionInput } from './dto/get_submission.input';
+import { GetSubmissionResponse } from './dto/get_submission.response';
+import { GetSubmissionListInput } from './dto/get_submission_list.input';
+import { GetSubmissionListResponse } from './dto/get_submission_list.response';
+import { ListeningSubmissionContent } from './schema/listening_submission_content.schema';
+import { ListeningSubmissionGrade } from './schema/listening_submission_grade.schema';
+import { ReadingSubmissionContent } from './schema/reading_submission_content.schema';
+import { ReadingSubmissionGrade } from './schema/reading_submission_grade.schema';
+import SubmissionService from './submission.service';
 
 class SubmissionController {
-  constructor(
-    private readonly submissionService: SubmissionService,
-    private readonly assignmentService: AssignmentService,
-    private readonly classMemberService: ClassService,
-  ) {}
+    constructor(
+        private readonly submissionService: SubmissionService,
+        private readonly assignmentService: AssignmentService,
+        private readonly classMemberService: ClassService,
+    ) {}
 
-  async createSubmission(
-    input: CreateSubmissionInput,
-  ): Promise<CreateSubmissionResponse> {
-    const submission = await this.submissionService.createSubmission(input);
+    async createSubmission(input: CreateSubmissionInput): Promise<CreateSubmissionResponse> {
+        const assignment = await this.assignmentService.getAssignment({ id: input.assignmentId });
 
-    await this.assignmentService.updateAssignment({
-      id: submission.assignmentId,
-      status: "SUBMITTED",
-    });
+        if (!assignment) {
+            throw new Error('Cannot find assignment');
+        }
 
-    return {
-      data: submission,
-      message: "Created submission successfully",
-    };
-  }
+        const exercise = assignment.exercise;
 
-  async getSubmission(
-    input: GetSubmissionInput,
-  ): Promise<GetSubmissionResponse> {
-    const submission = await this.submissionService.getSubmission(input);
+        const grade = this.autoGrade(exercise, input.content);
 
-    if (!submission) {
-      throw new Error("Cannot find submission");
+        const submission = await this.submissionService.createSubmission(input, grade);
+
+        await this.assignmentService.updateAssignment({
+            id: submission.assignmentId,
+            status: 'SUBMITTED',
+        });
+
+        return {
+            data: submission,
+            message: 'Created submission successfully',
+        };
     }
 
-    return {
-      data: {
-        submission: submission,
-        exercise: submission.assignment.exercise,
-        assignment: submission.assignment,
-      },
-      message: "Get submission successfully",
-    };
-  }
+    autoGrade(exercise: Exercise, content: any) {
+        switch (exercise.type) {
+            case 'READING': {
+                const readingSubmissionContent = content as ReadingSubmissionContent;
+                const exerciseContent = exercise.content as ReadingExercise;
 
-  async getSubmissions(
-    input: GetSubmissionListInput,
-    userId: string,
-  ): Promise<GetSubmissionListResponse> {
-    const classMember = await this.classMemberService.getClassByUserId(userId);
+                let score = 0;
+                let total = 0;
 
-    const classIds = classMember.map((e) => e.classId);
+                readingSubmissionContent.tasks.forEach((task, index) => {
+                    const exerciseTask = exerciseContent.tasks[index];
+                    task.questions.forEach((question, index) => {
+                        total++;
+                        const answer = question.answer;
+                        const correctAnswer = exerciseTask.questions[index].correctAnswer;
 
-    const submissions = await this.submissionService.getSubmissions(
-      input,
-      classIds,
-    );
+                        if (answer != null && correctAnswer == answer) {
+                            score++;
+                        }
+                    });
+                });
 
-    if (submissions.length < input.take) {
-      return {
-        data: {
-          nodes: submissions,
-          pageInfo: {
-            hasNextPage: false,
-          },
-        },
-        message: "Get submissions successfully",
-      };
+                return {
+                    score,
+                    total,
+                } as ReadingSubmissionGrade;
+            }
+            case 'LISTENING': {
+                const readingSubmissionContent = content as ListeningSubmissionContent;
+                const exerciseContent = exercise.content as ListeningExercise;
+
+                let score = 0;
+                let total = 0;
+
+                readingSubmissionContent.tasks.forEach((task, index) => {
+                    const exerciseTask = exerciseContent.tasks[index];
+                    task.questions.forEach((question, index) => {
+                        total++;
+                        const answer = question.answer;
+                        const correctAnswer = exerciseTask.questions[index].correctAnswer;
+
+                        if (answer != null && correctAnswer == answer) {
+                            score++;
+                        }
+                    });
+                });
+
+                return {
+                    score,
+                    total,
+                } as ListeningSubmissionGrade;
+            }
+            default: {
+                return null;
+            }
+        }
     }
 
-    const cursor = submissions[submissions.length - 1].id;
+    async getSubmission(input: GetSubmissionInput): Promise<GetSubmissionResponse> {
+        const submission = await this.submissionService.getSubmission(input);
 
-    const nextCall = await this.submissionService.getSubmissions(
-      { ...input, cursor },
-      classIds,
-    );
+        if (!submission) {
+            throw new Error('Cannot find submission');
+        }
 
-    if (nextCall.length == 0) {
-      return {
-        data: {
-          nodes: submissions,
-          pageInfo: {
-            hasNextPage: false,
-          },
-        },
-        message: "Get submissions successfully",
-      };
+        return {
+            data: {
+                submission: submission,
+                exercise: submission.assignment.exercise,
+                assignment: submission.assignment,
+            },
+            message: 'Get submission successfully',
+        };
     }
 
-    return {
-      data: {
-        nodes: submissions,
-        pageInfo: {
-          hasNextPage: true,
-          cursor,
-        },
-      },
-      message: "Get submissions successfully",
-    };
-  }
+    async getSubmissions(input: GetSubmissionListInput, userId: string): Promise<GetSubmissionListResponse> {
+        const classMember = await this.classMemberService.getClassByUserId(userId);
+
+        const classIds = classMember.map(e => e.classId);
+
+        const submissions = await this.submissionService.getSubmissions(input, classIds);
+
+        if (submissions.length < input.take) {
+            return {
+                data: {
+                    nodes: submissions,
+                    pageInfo: {
+                        hasNextPage: false,
+                    },
+                },
+                message: 'Get submissions successfully',
+            };
+        }
+
+        const cursor = submissions[submissions.length - 1].id;
+
+        const nextCall = await this.submissionService.getSubmissions({ ...input, cursor }, classIds);
+
+        if (nextCall.length == 0) {
+            return {
+                data: {
+                    nodes: submissions,
+                    pageInfo: {
+                        hasNextPage: false,
+                    },
+                },
+                message: 'Get submissions successfully',
+            };
+        }
+
+        return {
+            data: {
+                nodes: submissions,
+                pageInfo: {
+                    hasNextPage: true,
+                    cursor,
+                },
+            },
+            message: 'Get submissions successfully',
+        };
+    }
 }
 
 export default SubmissionController;

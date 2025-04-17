@@ -1,23 +1,21 @@
-import { Static, Type } from "@sinclair/typebox";
-import { Nullable } from "../../../types/nullable";
+import { Static, Type } from '@sinclair/typebox';
+import { Nullable } from '../../../types/nullable';
 
 export const ListeningSubmissionContentSchema = Type.Object(
-  {
-    tasks: Type.Array(
-      Type.Object({
-        order: Type.Number(),
-        questions: Type.Array(
-          Type.Object({
-            order: Type.Number(),
-            answer: Nullable(Type.String()),
-          }),
+    {
+        tasks: Type.Array(
+            Type.Object({
+                order: Type.Number(),
+                questions: Type.Array(
+                    Type.Object({
+                        order: Type.Number(),
+                        answer: Nullable(Type.String()),
+                    }),
+                ),
+            }),
         ),
-      }),
-    ),
-  },
-  { $id: "ListeningSubmissionContent" },
+    },
+    { $id: 'ListeningSubmissionContent' },
 );
 
-export type ReadingSubmissionContent = Static<
-  typeof ListeningSubmissionContentSchema
->;
+export type ListeningSubmissionContent = Static<typeof ListeningSubmissionContentSchema>;
